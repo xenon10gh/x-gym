@@ -13,7 +13,59 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Test {
-  id Int @id @default(autoincrement())
+model Exercise {
+  id String @id @default(uuid()) @db.Uuid
   name String
+
+  // Relación con el modelo Level
+  levelId   String   @db.Uuid
+  level     Level    @relation(fields: [levelId], references: [id])
+
+  // Relación con el modelo Equipment
+  equipmentId   String?       @db.Uuid
+  equipment     Equipment?    @relation(fields: [equipmentId], references: [id])
+
+  // Relación Muchos a Muchos con BodyPart
+  bodyParts  BodyPart[]
+
+  instructions String? @db.Text
+
+  // Relación con el modelo Category
+  categoryId   String?      @db.Uuid
+  category     Category?    @relation(fields: [categoryId], references: [id])
+
+  // Relación con imágenes
+  images     ExerciseImage[]
+
+}
+
+model Level {
+  id String @id @default(uuid()) @db.Uuid
+  name String @unique
+  exercises Exercise[]
+}
+
+model Equipment {
+  id String @id @default(uuid()) @db.Uuid
+  name String @unique
+  exercises Exercise[]
+}
+
+model BodyPart {
+  id         String      @id @default(uuid()) @db.Uuid
+  name       String      @unique
+  exercises  Exercise[]
+}
+
+model Category {
+  id         String      @id @default(uuid()) @db.Uuid
+  name       String      @unique
+  exercises Exercise[]
+}
+
+model ExerciseImage {
+  id          String   @id @default(uuid()) @db.Uuid
+  url         String
+  exerciseId  String   @db.Uuid
+  exercise    Exercise @relation(fields: [exerciseId], references: [id])
 }

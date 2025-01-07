@@ -1,1 +1,1 @@
-* Migrar: `npx prisma migrate dev --name init`
+* Migrate: `npx prisma migrate dev --name init`
