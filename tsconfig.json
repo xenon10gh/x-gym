@@ -2,11 +2,16 @@
   "compilerOptions": {
     "target": "ES6",
     "module": "CommonJS",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true
+    "outDir": "./dist", // Carpeta de salida para los archivos compilados
+    "rootDir": "./src", // Carpeta raíz de los archivos fuente
+    "strict": true, // Habilita todas las verificaciones estrictas de TypeScript
+    "esModuleInterop": true, // Compatibilidad con importaciones comunes
+    "resolveJsonModule": true, // Permite importar JSON
+    "baseUrl": ".", // Base para resolver rutas
+    "paths": {
+      "*": ["node_modules/*", "src/seed/*"] // Alias para node_modules y carpeta seed
+    }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*", "src/seed/**/*"], // Archivos incluidos
+  "exclude": ["node_modules"] // Archivos excluidos
 }

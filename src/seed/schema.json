@@ -37,7 +37,6 @@
     "equipment": {
       "type": [ "string", "null" ],
       "enum": [
-        null,
         "medicine ball",
         "dumbbell",
         "body only",
