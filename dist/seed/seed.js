@@ -41,17 +41,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
+const exercises_json_1 = __importDefault(require("./exercises.json"));
 const exerciseSpecs = __importStar(require("./schema.json"));
 const prisma = new client_1.PrismaClient();
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        yield createLevels();
-        yield createEquipments();
-        yield createBodyParts();
-        yield createCategories();
-        yield createExerciseImages();
+        // await createLevels();
+        // await createEquipments();
+        // await createBodyParts();
+        // await createCategories();
         yield createExercises();
         console.log("Data seeded successfully");
     });
@@ -64,9 +67,9 @@ function createLevels() {
             };
         });
         console.log(levels);
-        // await prisma.level.createMany({
-        //     data: levels
-        // });
+        yield prisma.level.createMany({
+            data: levels
+        });
     });
 }
 function createEquipments() {
@@ -77,9 +80,9 @@ function createEquipments() {
             };
         });
         console.log(equipments);
-        // await prisma.equipment.createMany({
-        //     data: equipments
-        // });
+        yield prisma.equipment.createMany({
+            data: equipments
+        });
     });
 }
 function createBodyParts() {
@@ -90,9 +93,9 @@ function createBodyParts() {
             };
         });
         console.log(bodyParts);
-        // await prisma.bodyPart.createMany({
-        //     data: bodyParts
-        // });
+        yield prisma.bodyPart.createMany({
+            data: bodyParts
+        });
     });
 }
 function createCategories() {
@@ -103,17 +106,74 @@ function createCategories() {
             };
         });
         console.log(categories);
-        // await prisma.category.createMany({
-        //     data: categories
-        // });
-    });
-}
-function createExerciseImages() {
-    return __awaiter(this, void 0, void 0, function* () {
+        yield prisma.category.createMany({
+            data: categories
+        });
     });
 }
 function createExercises() {
     return __awaiter(this, void 0, void 0, function* () {
+        var _a;
+        console.log(Array.isArray(exercises_json_1.default));
+        console.log(exercises_json_1.default.length);
+        for (const exercise of exercises_json_1.default) {
+            console.log(exercise);
+            let exerciseLevel = yield prisma.level.findUnique({
+                where: {
+                    name: exercise.level
+                }
+            });
+            if (!exerciseLevel) {
+                throw new Error("Level not found");
+            }
+            let exerciseEquipment = yield prisma.equipment.findUnique({
+                where: {
+                    name: exercise.equipment || "none"
+                }
+            });
+            if (!exerciseEquipment) {
+                throw new Error("Equipment not found");
+            }
+            let exerciseBodyParts = yield prisma.bodyPart.findMany({
+                where: {
+                    name: {
+                        in: [...(exercise.primaryMuscles || []), ...(exercise.secondaryMuscles || [])],
+                    },
+                },
+            });
+            let exerciseCategory = yield prisma.category.findUnique({
+                where: {
+                    name: exercise.category
+                }
+            });
+            if (!exerciseCategory) {
+                throw new Error("Category not found");
+            }
+            let exerciseData = {
+                name: exercise.name,
+                levelId: exerciseLevel.id,
+                equipmentId: exerciseEquipment.id,
+                categoryId: exerciseCategory.id,
+                instructions: exercise.instructions.join("\n"),
+                bodyParts: {
+                    connect: exerciseBodyParts.map(bodyPart => {
+                        return {
+                            id: bodyPart.id
+                        };
+                    })
+                },
+                images: ((_a = exercise.images) === null || _a === void 0 ? void 0 : _a.length) ? {
+                    create: exercise.images.map(image => {
+                        return {
+                            url: "public/" + image
+                        };
+                    })
+                } : undefined,
+            };
+            yield prisma.exercise.create({
+                data: exerciseData
+            });
+        }
     });
 }
 main()

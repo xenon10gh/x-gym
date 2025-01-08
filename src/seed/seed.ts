@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
-import * as exercises from "./exercises.json";
+import exercises from "./exercises.json";
 import * as exerciseSpecs from "./schema.json";
+import { connect } from "http2";
 
 const prisma = new PrismaClient();
 
@@ -9,7 +10,6 @@ async function main() {
     await createEquipments();
     await createBodyParts();
     await createCategories();
-    await createExerciseImages();
     await createExercises();
     console.log("Data seeded successfully");
 }
@@ -22,9 +22,9 @@ async function createLevels() {
         }
     });
     console.log(levels);
-    // await prisma.level.createMany({
-    //     data: levels
-    // });
+    await prisma.level.createMany({
+        data: levels
+    });
 }
 
 async function createEquipments() {
@@ -34,9 +34,9 @@ async function createEquipments() {
         }
     });
     console.log(equipments);
-    // await prisma.equipment.createMany({
-    //     data: equipments
-    // });
+    await prisma.equipment.createMany({
+        data: equipments
+    });
 }
 
 async function createBodyParts() {
@@ -46,9 +46,9 @@ async function createBodyParts() {
         }
     });
     console.log(bodyParts);
-    // await prisma.bodyPart.createMany({
-    //     data: bodyParts
-    // });
+    await prisma.bodyPart.createMany({
+        data: bodyParts
+    });
 }
 
 async function createCategories() {
@@ -58,18 +58,78 @@ async function createCategories() {
         }
     });
     console.log(categories);
-    // await prisma.category.createMany({
-    //     data: categories
-    // });
+    await prisma.category.createMany({
+        data: categories
+    });
 }
 
-async function createExerciseImages() {
-
-}
 
 async function createExercises() {
-    
+    console.log(Array.isArray(exercises));
+    console.log(exercises.length);
+    for (const exercise of exercises) {
+        console.log(exercise);
+        let exerciseLevel = await prisma.level.findUnique({
+            where: {
+                name: exercise.level
+            }
+        });
+        if (!exerciseLevel) {
+            throw new Error("Level not found");
+        }
+        let exerciseEquipment = await prisma.equipment.findUnique({
+            where: {
+                name: exercise.equipment || "none"
+            }
+        });
+        if (!exerciseEquipment) {
+            throw new Error("Equipment not found");
+        }
+        let exerciseBodyParts = await prisma.bodyPart.findMany({
+            where: {
+                name: {
+                    in: [...(exercise.primaryMuscles || []), ...(exercise.secondaryMuscles || [])],
+                },
+            },
+        });
+        let exerciseCategory = await prisma.category.findUnique({
+            where: {
+                name: exercise.category
+            }
+        });
+
+        if (!exerciseCategory) {
+            throw new Error("Category not found");
+        }
+
+        let exerciseData = {
+            name: exercise.name,
+            levelId: exerciseLevel.id,
+            equipmentId: exerciseEquipment.id,
+            categoryId: exerciseCategory.id,
+            instructions: exercise.instructions.join("\n"),
+            bodyParts: {
+                connect: exerciseBodyParts.map(bodyPart => {
+                    return {
+                        id: bodyPart.id
+                    }
+                })
+            },
+            images: exercise.images?.length ? {
+                    create: exercise.images.map(image => {
+                        return {
+                            url: "public/" + image
+                        }
+                    })
+                } : undefined,
+        }
+
+        await prisma.exercise.create({
+            data: exerciseData
+        });
+    }
 }
+
 
 main()
     .catch(e => {
