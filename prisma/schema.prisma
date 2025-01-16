@@ -18,9 +18,11 @@ model User {
   auth0Id String @unique
   email String @unique
   name String?
+  picture String?
+  trainingPlans TrainingPlan[]
+  workouts Workout[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  picture String?
   
   // To-Do
   // role ...
@@ -50,6 +52,9 @@ model Exercise {
 
   // Relación con imágenes
   images     ExerciseImage[]
+
+  trainingDays   TrainingDay[]  @relation("DayExercises")
+  workoutSets WorkoutSet[]
 
 }
 
@@ -82,4 +87,55 @@ model ExerciseImage {
   url         String
   exerciseId  String   @db.Uuid
   exercise    Exercise @relation(fields: [exerciseId], references: [id])
+}
+
+model TrainingPlan {
+  id          String   @id @default(uuid()) @db.Uuid
+  name String
+  description String?
+  userId String @db.Uuid
+  user           User           @relation(fields: [userId], references: [id])
+  trainingDays TrainingDay[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TrainingDay {
+  id             String         @id @default(uuid()) @db.Uuid
+  dayNumber      Int            // Día dentro del plan (e.g., 1, 2, 3...)
+  trainingPlanId String @db.Uuid      // Relación con el plan de entrenamiento
+  trainingPlan   TrainingPlan   @relation(fields: [trainingPlanId], references: [id])
+  exercises      Exercise[]     @relation("DayExercises") // Relación muchos a muchos con ejercicios
+  workouts  Workout[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model Workout {
+  id             String         @id @default(uuid()) @db.Uuid
+
+  trainingDayId String @db.Uuid      // Relación con el plan de entrenamiento
+  trainingDay TrainingDay @relation(fields: [trainingDayId], references: [id])
+
+  userId String @db.Uuid
+  user           User           @relation(fields: [userId], references: [id])
+
+  date          DateTime     @default(now())
+  notes         String?      @db.Text
+  exercises     WorkoutSet[]
+}
+
+model WorkoutSet {
+  id                String           @id @default(uuid())
+
+  workoutId String   @db.Uuid
+  workout   Workout  @relation(fields: [workoutId], references: [id]) // Relación con el ejercicio realizado
+
+  exerciseId String       @db.Uuid
+  exercise   Exercise     @relation(fields: [exerciseId], references: [id]) // Relación con el ejercicio
+
+  setNumber         Int              // Número del set (por ejemplo, 1, 2, 3, etc.)
+  reps              Int              // Número de repeticiones en este set
+  weight            Float?           // Peso usado en este set (opcional)
+  weightUnit String @default("kg")   // En el caso de ejercicios sin peso boner BodyWeight (bw)
 }

@@ -51,10 +51,10 @@ const exerciseSpecs = __importStar(require("./schema.json"));
 const prisma = new client_1.PrismaClient();
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        // await createLevels();
-        // await createEquipments();
-        // await createBodyParts();
-        // await createCategories();
+        yield createLevels();
+        yield createEquipments();
+        yield createBodyParts();
+        yield createCategories();
         yield createExercises();
         console.log("Data seeded successfully");
     });
