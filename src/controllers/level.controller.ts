@@ -15,3 +15,13 @@ export const getLevels = async (req: Request, res: Response): Promise<void> => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+export const createLevel = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { name } = req.body;
+        const level = await LevelModel.createLevel({ name });
+        res.status(201).json(level);
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};

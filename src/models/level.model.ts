@@ -17,6 +17,29 @@ class LevelModel {
             }
         });
     }
+
+    static async createLevel(data: any): Promise<Level> {
+        return await prisma.level.create({
+            data: data
+        });
+    }
+
+    static async updateLevel(id: string, data: any): Promise<Level> {
+        return await prisma.level.update({
+            where: {
+                id: id
+            },
+            data: data
+        });
+    }
+
+    static async deleteLevel(id: string): Promise<Level> {
+        return await prisma.level.delete({
+            where: {
+                id: id
+            }
+        });
+    }
 }
 
 export default LevelModel;

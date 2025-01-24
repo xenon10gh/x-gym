@@ -9,7 +9,14 @@ class ExerciseModel {
         const exercises = await prisma.exercise.findMany({
             where: filters,
             skip: (page - 1) * limit,
-            take: limit
+            take: limit,
+            include: {
+                bodyParts: true,
+                images: true,
+                category: true,
+                equipment: true,
+                level: true
+            }
         });
 
         const totalExercises = await prisma.exercise.count({
@@ -25,10 +32,46 @@ class ExerciseModel {
         };
     }
 
-    static async getById(id: string): Promise<Exercise> {
+    static async getById(id: string): Promise<Exercise | null> {
         return await prisma.exercise.findUnique({
             where: {
                 id: id
+            },
+            include: {
+                bodyParts: true,
+                images: true,
+                category: true,
+                equipment: true,
+                level: true
+            }
+        });
+    }
+
+    static async createExercise(data: any): Promise<Exercise> {
+        return await prisma.exercise.create({
+            data: data,
+            include: {
+                bodyParts: true,
+                images: true,
+                category: true,
+                equipment: true,
+                level: true
+            }
+        });
+    }
+
+    static async updateExercise(id: string, data: any): Promise<Exercise> {
+        return await prisma.exercise.update({
+            where: {
+                id: id
+            },
+            data: data,
+            include: {
+                bodyParts: true,
+                images: true,
+                category: true,
+                equipment: true,
+                level: true
             }
         });
     }
