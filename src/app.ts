@@ -12,6 +12,7 @@ import categoryRouter from './routes/category.route';
 import exerciseImageRouter from './routes/exerciseimage.route';
 import trainingPlanRouter from './routes/trainingplan.route';
 import trainingDayRouter from './routes/trainingday.route';
+import workoutRouter from './routes/workout.route';
 
 import { auth, requiredScopes } from "express-oauth2-jwt-bearer";
 import { jwtCheck, syncUser } from './auth/middleware';
@@ -32,5 +33,6 @@ app.use('/api/categories', categoryRouter);
 app.use('/api/exerciseimages', exerciseImageRouter)
 app.use('/api/trainingplans', trainingPlanRouter);
 app.use('/api/trainingdays', trainingDayRouter);
+app.use('/api/workout', workoutRouter)
 
 export default app;
